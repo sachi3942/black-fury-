@@ -1,0 +1,64 @@
+name: Build Black Fury APK
+
+# Runs automatically on every push to main, and can also be triggered
+# manually from the Actions tab ("Run workflow" button).
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Scaffold Android platform folder (first run only)
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create --platforms=android --org com.blackfury .
+          fi
+
+      - name: Set application ID to com.blackfury.vehiclecontrol
+        run: |
+          OLD_ID="com.blackfury.black_fury"
+          NEW_ID="com.blackfury.vehiclecontrol"
+          grep -rl "$OLD_ID" android/ 2>/dev/null | xargs -r sed -i "s/$OLD_ID/$NEW_ID/g" || true
+          OLD_DIR=$(find android -type d -path "*/com/blackfury/black_fury" 2>/dev/null || true)
+          if [ -n "$OLD_DIR" ]; then
+            NEW_DIR="$(dirname "$OLD_DIR")/vehiclecontrol"
+            mkdir -p "$NEW_DIR"
+            mv "$OLD_DIR"/* "$NEW_DIR"/ 2>/dev/null || true
+            rmdir "$OLD_DIR" 2>/dev/null || true
+          fi
+
+      - name: Ensure INTERNET permission is declared
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          if [ -f "$MANIFEST" ] && ! grep -q "android.permission.INTERNET" "$MANIFEST"; then
+            sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' "$MANIFEST"
+          fi
+
+      - name: Generate launcher icons (Toothless icon)
+        run: |
+          flutter pub get
+          dart run flutter_launcher_icons
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: black-fury-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
