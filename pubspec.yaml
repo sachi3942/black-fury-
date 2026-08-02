@@ -1,0 +1,42 @@
+name: black_fury
+description: "Black Fury - Smart Motorcycle Control System (Toothless Theme)"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  http: ^1.2.1
+  url_launcher: ^6.2.6
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+
+# ---------------------------------------------------------------------------
+# App Icon Configuration (Toothless Face Icon)
+# Run: flutter pub run flutter_launcher_icons
+# Place your Toothless face artwork at assets/icon/toothless_icon.png
+# Recommended: 1024x1024 PNG, transparent or dark background, centered face.
+# ---------------------------------------------------------------------------
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/toothless_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0B0E14"
+  adaptive_icon_foreground: "assets/icon/toothless_icon.png"
+  remove_alpha_ios: true
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/
+    - assets/images/
