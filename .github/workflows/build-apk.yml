@@ -1,3 +1,4 @@
+
 name: Build Black Fury APK
 
 # Runs automatically on every push to main, and can also be triggered
@@ -25,7 +26,13 @@ jobs:
       - name: Scaffold Android platform folder (first run only)
         run: |
           if [ ! -d "android" ]; then
+            mkdir -p /tmp/backup
+            cp -r lib /tmp/backup/lib
+            cp pubspec.yaml /tmp/backup/pubspec.yaml
             flutter create --platforms=android --org com.blackfury .
+            rm -rf lib
+            cp -r /tmp/backup/lib lib
+            cp /tmp/backup/pubspec.yaml pubspec.yaml
           fi
 
       - name: Set application ID to com.blackfury.vehiclecontrol
