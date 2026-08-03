@@ -1,4 +1,3 @@
-
 name: Build Black Fury APK
 
 # Runs automatically on every push to main, and can also be triggered
@@ -14,6 +13,30 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Extract project zip (if uploaded)
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
+          if [ -n "$ZIP_FILE" ]; then
+            echo "Found zip: $ZIP_FILE — extracting over the repo..."
+            rm -rf /tmp/extracted
+            mkdir -p /tmp/extracted
+            unzip -o "$ZIP_FILE" -d /tmp/extracted
+            # The zip may contain one top-level folder (e.g. black_fury/) —
+            # if so, copy ITS contents to the repo root; otherwise copy
+            # the extracted root directly.
+            SRC_DIR=$(find /tmp/extracted -maxdepth 1 -mindepth 1 -type d | head -n 1)
+            SRC_FILE_COUNT=$(find /tmp/extracted -maxdepth 1 -mindepth 1 -type f | wc -l)
+            if [ -n "$SRC_DIR" ] && [ "$SRC_FILE_COUNT" -eq 0 ]; then
+              cp -rf "$SRC_DIR"/. .
+            else
+              cp -rf /tmp/extracted/. .
+            fi
+            echo "Extraction complete. lib/ now contains:"
+            find lib -maxdepth 1
+          else
+            echo "No zip file found at repo root — using repo files as-is."
+          fi
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
